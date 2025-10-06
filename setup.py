@@ -58,7 +58,7 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "keyboard>=0.13.5",
-        "pywin32>=306",
+        "pywin32>=306; sys_platform == 'win32'",
     ],
     extras_require={
         "dev": [
