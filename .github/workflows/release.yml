@@ -84,6 +84,15 @@ jobs:
         run: |
           echo "${{ needs.build.outputs.checksum }}" > dist/CookieClickerBot.exe.sha256
 
+      - name: Generate changelog
+        id: changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: CHANGELOG_RELEASE.md
+
       - name: Determine release type
         id: release_type
         shell: bash
@@ -119,7 +128,7 @@ jobs:
         shell: pwsh
         run: |
           $type = "${{ steps.release_type.outputs.type }}"
-          $sha = "${{ steps.checksum.outputs.sha256 }}"
+          $sha = "${{ needs.build.outputs.checksum }}"
 
           $badge = switch ($type) {
             "release" { "🚀" }
@@ -165,14 +174,22 @@ jobs:
           ``````
 
           ### 📝 What's Changed
-          See the [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+
+          "@
+
+          # Combine release notes with changelog
+          $body | Out-File -FilePath release_notes.md -Encoding utf8
+          if (Test-Path CHANGELOG_RELEASE.md) {
+            Get-Content CHANGELOG_RELEASE.md | Add-Content release_notes.md -Encoding utf8
+          }
+
+          # Add footer
+          @"
 
           ---
 
-          **Full Changelog:** https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.sha }}
-          "@
-
-          $body | Out-File -FilePath release_notes.md -Encoding utf8
+          **Full Changelog:** https://github.com/${{ github.repository }}/releases/tag/${{ steps.release_type.outputs.tag }}
+          "@ | Add-Content release_notes.md -Encoding utf8
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
