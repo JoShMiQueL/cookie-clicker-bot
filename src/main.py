@@ -26,8 +26,12 @@ def autoclicker_thread(stop_event: threading.Event, overlay: ClickOverlay | None
     # Create the autoclicker
     clicker = AutoClicker(hwnd, stop_event)
 
-    print(f"🖱️ Autoclicker started ({config.CPS} clicks/second). Press {config.STOP_KEY.upper()} to stop.")
-    print("💡 You can continue working normally, this autoclicker doesn't affect your physical cursor.")
+    print(
+        f"🖱️ Autoclicker started ({config.CPS} clicks/second). Press {config.STOP_KEY.upper()} to stop."
+    )
+    print(
+        "💡 You can continue working normally, this autoclicker doesn't affect your physical cursor."
+    )
     print("📌 Note: If the game is in fullscreen, run it in borderless window mode")
 
     # Configure the overlay if enabled
@@ -65,13 +69,17 @@ def main():
     stop_event = threading.Event()
 
     print("🔍 Searching for Cookie Clicker window (Steam)...")
-    print("💡 The title changes dynamically based on your cookies (e.g., '123 cookies - Cookie Clicker')")
+    print(
+        "💡 The title changes dynamically based on your cookies (e.g., '123 cookies - Cookie Clicker')"
+    )
 
     # Create the overlay if enabled
     overlay = ClickOverlay() if config.SHOW_OVERLAY else None
 
     # Start the autoclicker thread
-    clicker_thread = threading.Thread(target=autoclicker_thread, args=(stop_event, overlay), daemon=True)
+    clicker_thread = threading.Thread(
+        target=autoclicker_thread, args=(stop_event, overlay), daemon=True
+    )
     clicker_thread.start()
 
     # Start the stop key monitor thread
