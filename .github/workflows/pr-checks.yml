@@ -210,20 +210,45 @@ jobs:
             // Check for issue references like #123, fixes #123, closes #123
             const hasIssueReference = /(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#\d+/i.test(body) || /#\d+/.test(body);
 
+            // Get existing comments
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number
+            });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('No linked issue found')
+            );
+
             if (!hasIssueReference && !pr.draft) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: pr.number,
-                body: `ℹ️ **No linked issue found**
+              const commentBody = `ℹ️ **No linked issue found**
 
-                Consider linking this PR to an issue using keywords like:
-                - \`Fixes #123\`
-                - \`Closes #123\`
-                - \`Resolves #123\`
+              Consider linking this PR to an issue using keywords like:
+              - \`Fixes #123\`
+              - \`Closes #123\`
+              - \`Resolves #123\`
 
-                This helps track the context and purpose of changes.`
-              });
+              This helps track the context and purpose of changes.`;
+
+              if (botComment) {
+                // Update existing comment
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                  body: commentBody
+                });
+              } else {
+                // Create new comment
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  body: commentBody
+                });
+              }
 
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
@@ -231,4 +256,23 @@ jobs:
                 issue_number: pr.number,
                 labels: ['no-issue-linked']
               });
+            } else if (hasIssueReference && botComment) {
+              // Delete comment if issue was linked
+              await github.rest.issues.deleteComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id
+              });
+
+              // Remove label
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  name: 'no-issue-linked'
+                });
+              } catch (error) {
+                // Label might not exist, ignore error
+              }
             }
