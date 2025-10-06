@@ -23,8 +23,11 @@ dist/
 # Testing
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
 .tox/
+coverage.xml
+.ruff_cache/
 
 # IDE
 .vscode/

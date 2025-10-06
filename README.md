@@ -1,6 +1,7 @@
 # 🍪 Cookie Clicker Autoclicker
 
 [![Build Status](https://github.com/JoShMiQueL/cookie-clicker-bot/workflows/CI%20Pipeline/badge.svg)](https://github.com/JoShMiQueL/cookie-clicker-bot/actions/workflows/ci-pipeline.yml)
+[![Tests](https://github.com/JoShMiQueL/cookie-clicker-bot/workflows/Tests/badge.svg)](https://github.com/JoShMiQueL/cookie-clicker-bot/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
@@ -49,6 +50,11 @@ setup-hooks
 
 # Run GUI
 python main.py
+
+# Run tests
+pytest
+# Or with coverage
+pytest --cov=src --cov-report=html
 ```
 
 **Build executable:**
@@ -56,6 +62,48 @@ python main.py
 python scripts/build.py
 # Find in dist/CookieClickerBot.exe
 ```
+
+## 🧪 Testing
+
+This project includes a comprehensive test suite with high coverage (47 tests).
+
+**Quick test run:**
+```bash
+# Windows
+.\scripts\run_tests.ps1
+
+# Linux/Mac
+./scripts/run_tests.sh
+
+# Or directly with pytest
+pytest
+```
+
+**Run with coverage report:**
+```bash
+pytest --cov=src --cov-report=html
+# Open htmlcov/index.html to view detailed coverage
+```
+
+**Run specific test file:**
+```bash
+pytest tests/test_clicker.py
+```
+
+**Test structure:**
+- `tests/test_config.py` - Configuration tests (8 tests)
+- `tests/test_window_finder.py` - Window detection tests (14 tests)
+- `tests/test_clicker.py` - Autoclicker logic tests (12 tests)
+- `tests/test_overlay.py` - Visual overlay tests (9 tests)
+- `tests/test_gui.py` - GUI functionality tests (4 tests)
+
+**Automated testing:**
+Tests are automatically run:
+- ✅ **Before every push** (via pre-push hook)
+- ✅ **On every pull request** (with coverage reporting)
+- ✅ **On every push to main** (on Ubuntu and Windows)
+
+See [tests/README.md](tests/README.md) for detailed testing documentation.
 
 ## 💡 Usage Tips
 
@@ -104,13 +152,23 @@ cookie-clicker-bot/
 │   ├── clicker.py            # Click automation
 │   ├── overlay.py            # Visual overlay
 │   └── gui.py                # GUI implementation
+├── tests/                    # Test suite
+│   ├── __init__.py
+│   ├── conftest.py           # Pytest fixtures
+│   ├── test_config.py        # Config tests
+│   ├── test_window_finder.py # Window finder tests
+│   ├── test_clicker.py       # Clicker tests
+│   ├── test_overlay.py       # Overlay tests
+│   ├── test_gui.py           # GUI tests
+│   └── README.md             # Testing documentation
 ├── scripts/                  # Utility scripts
 │   ├── build.py              # Build executable
 │   └── setup_hooks.py        # Pre-commit hooks setup
 ├── .github/                  # GitHub configuration
 │   ├── workflows/            # CI/CD pipelines
 │   │   ├── ci-pipeline.yml   # Main CI/CD pipeline
-│   │   ├── pr-checks.yml     # PR validation
+│   │   ├── pr-checks.yml     # PR validation (includes tests)
+│   │   ├── tests.yml         # Test suite execution
 │   │   ├── pr-labeler.yml    # PR labeling & stats
 │   │   ├── release.yml       # Automated releases
 │   │   ├── changelog.yml     # Changelog generation

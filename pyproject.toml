@@ -1,6 +1,6 @@
 [project]
 name = "cookie-clicker-bot"
-version = "v1.0.0"
+version = "1.0.0"
 description = "Professional autoclicker for Cookie Clicker with GUI and real-time adjustments"
 authors = [
     {name = "JoShMiQueL", email = "joshmiquel.cs@gmail.com"}
@@ -28,6 +28,12 @@ dev = [
     "pyinstaller>=6.0.0",
     "ruff>=0.1.0",
     "pre-commit>=3.5.0",
+    "git-cliff>=2.0.0",
+]
+test = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-mock>=3.12.0",
 ]
 
 [project.scripts]
