@@ -156,21 +156,24 @@ jobs:
               .map(([ext, count]) => `\`${ext}\` **${count}**`)
               .join(' • ');
 
-            // Calculate PR size
+            // Calculate PR size (matching size/* labels)
             const prSize = additions + deletions;
             let sizeEmoji, sizeLabel;
-            if (prSize < 100) {
+            if (prSize < 10) {
               sizeEmoji = '🟢';
-              sizeLabel = 'Small';
+              sizeLabel = 'XS';
+            } else if (prSize < 100) {
+              sizeEmoji = '🟢';
+              sizeLabel = 'S';
             } else if (prSize < 500) {
               sizeEmoji = '🟡';
-              sizeLabel = 'Medium';
+              sizeLabel = 'M';
             } else if (prSize < 1000) {
               sizeEmoji = '🟠';
-              sizeLabel = 'Large';
+              sizeLabel = 'L';
             } else {
               sizeEmoji = '🔴';
-              sizeLabel = 'Very Large';
+              sizeLabel = 'XL';
             }
 
             // Check if comment already exists

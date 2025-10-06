@@ -181,7 +181,7 @@ Automatically posts a beautiful statistics comment with:
 - 📈 Changes overview table (additions, deletions, net change)
 - 📁 Files changed/added/modified/deleted
 - 📝 Commit count
-- 📦 PR size indicator (🟢 Small / 🟡 Medium / 🟠 Large / 🔴 Very Large)
+- 📦 PR size indicator (🟢 XS/S / 🟡 M / 🟠 L / 🔴 XL)
 - 📄 Top 5 file types
 - 💡 Auto-updates on each push (no spam)
 
