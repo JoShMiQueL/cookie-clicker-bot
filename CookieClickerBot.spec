@@ -3,17 +3,17 @@
 block_cipher = None
 
 a = Analysis(
-    ['src/gui.py'],
+    ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[
-        ('src/config.py', 'src'),
-        ('src/window_finder.py', 'src'),
-        ('src/clicker.py', 'src'),
-        ('src/overlay.py', 'src'),
-        ('src/__init__.py', 'src'),
-    ],
+    datas=[],
     hiddenimports=[
+        'src',
+        'src.config',
+        'src.window_finder',
+        'src.clicker',
+        'src.overlay',
+        'src.gui',
         'win32api',
         'win32con',
         'win32gui',
