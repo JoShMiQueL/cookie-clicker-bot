@@ -79,6 +79,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const size = '${{ steps.size.outputs.size_mb }}';
             const sha = '${{ steps.checksum.outputs.sha256 }}';
@@ -89,7 +90,7 @@ jobs:
 
             Download the artifact from the workflow run to test.`;
 
-            github.rest.issues.createComment({
+            await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
