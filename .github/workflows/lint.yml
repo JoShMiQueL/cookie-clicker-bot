@@ -20,3 +20,10 @@ jobs:
 
       - name: Run pre-commit
         uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --from-ref origin/${{ github.base_ref }} --to-ref HEAD
+        if: github.event_name == 'pull_request'
+
+      - name: Run pre-commit (all files)
+        uses: pre-commit/action@v3.0.1
+        if: github.event_name == 'push'
