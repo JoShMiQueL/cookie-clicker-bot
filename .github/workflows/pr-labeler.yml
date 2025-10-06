@@ -1,11 +1,11 @@
-name: PR Labeler
+name: PR Labeler & Statistics
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, edited]
 
 jobs:
-  label-pr:
+  label-and-stats:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -13,6 +13,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Label by size
         uses: codelytv/pr-size-labeler@v1
@@ -100,5 +102,132 @@ jobs:
                 repo: context.repo.repo,
                 issue_number: pr.number,
                 body: '⚠️ This PR needs a description. Please add details about what changes were made and why.'
+              });
+            }
+
+      - name: Generate PR statistics
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+
+            // Get PR diff stats
+            const files = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number
+            });
+
+            let additions = 0;
+            let deletions = 0;
+            let filesChanged = files.data.length;
+            let filesAdded = 0;
+            let filesDeleted = 0;
+            let filesModified = 0;
+
+            files.data.forEach(file => {
+              additions += file.additions;
+              deletions += file.deletions;
+
+              if (file.status === 'added') filesAdded++;
+              else if (file.status === 'removed') filesDeleted++;
+              else if (file.status === 'modified') filesModified++;
+            });
+
+            // Get commit count
+            const commits = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number
+            });
+
+            const commitCount = commits.data.length;
+
+            // Get changed file types
+            const fileTypes = {};
+            files.data.forEach(file => {
+              const ext = file.filename.split('.').pop();
+              fileTypes[ext] = (fileTypes[ext] || 0) + 1;
+            });
+
+            const fileTypesList = Object.entries(fileTypes)
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 5)
+              .map(([ext, count]) => `\`${ext}\` **${count}**`)
+              .join(' • ');
+
+            // Calculate PR size
+            const prSize = additions + deletions;
+            let sizeEmoji, sizeLabel;
+            if (prSize < 100) {
+              sizeEmoji = '🟢';
+              sizeLabel = 'Small';
+            } else if (prSize < 500) {
+              sizeEmoji = '🟡';
+              sizeLabel = 'Medium';
+            } else if (prSize < 1000) {
+              sizeEmoji = '🟠';
+              sizeLabel = 'Large';
+            } else {
+              sizeEmoji = '🔴';
+              sizeLabel = 'Very Large';
+            }
+
+            // Check if comment already exists
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number
+            });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('📊 Pull Request Statistics')
+            );
+
+            const commentBody = [
+              '## 📊 Pull Request Statistics',
+              '',
+              '### 📈 Changes Overview',
+              '',
+              '| Metric | Value |',
+              '|--------|-------|',
+              `| 🟢 **Lines Added** | \`+${additions}\` |`,
+              `| 🔴 **Lines Deleted** | \`-${deletions}\` |`,
+              `| 📊 **Net Change** | \`${additions - deletions > 0 ? '+' : ''}${additions - deletions}\` |`,
+              `| 📁 **Files Changed** | \`${filesChanged}\` |`,
+              `| ✨ **Files Added** | \`${filesAdded}\` |`,
+              `| ✏️ **Files Modified** | \`${filesModified}\` |`,
+              `| 🗑️ **Files Deleted** | \`${filesDeleted}\` |`,
+              `| 📝 **Commits** | \`${commitCount}\` |`,
+              '',
+              '### 📦 PR Size',
+              '',
+              `${sizeEmoji} **${sizeLabel}** — \`${prSize}\` total changes`,
+              '',
+              '### 📄 Top File Types',
+              '',
+              fileTypesList || '*No files changed*',
+              '',
+              '---',
+              '',
+              '<sub>💡 *This comment updates automatically on each push*</sub>'
+            ].join('\n');
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: commentBody
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                body: commentBody
               });
             }

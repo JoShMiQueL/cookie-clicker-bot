@@ -41,7 +41,9 @@ class AutoClickerGUI:
         main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
 
         # Title
-        title_label = ttk.Label(main_frame, text="🍪 Cookie Clicker Autoclicker", font=("Arial", 16, "bold"))
+        title_label = ttk.Label(
+            main_frame, text="🍪 Cookie Clicker Autoclicker", font=("Arial", 16, "bold")
+        )
         title_label.grid(row=0, column=0, columnspan=2, pady=(0, 20))
 
         # Status
@@ -49,55 +51,69 @@ class AutoClickerGUI:
         self.status_label.grid(row=1, column=0, columnspan=2, pady=(0, 10))
 
         # Separator
-        ttk.Separator(main_frame, orient="horizontal").grid(row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+        ttk.Separator(main_frame, orient="horizontal").grid(
+            row=2, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10
+        )
 
         # CPS configuration
-        ttk.Label(main_frame, text="Clicks per second (CPS):").grid(row=3, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Clicks per second (CPS):").grid(
+            row=3, column=0, sticky=tk.W, pady=5
+        )
         cps_frame = ttk.Frame(main_frame)
         cps_frame.grid(row=3, column=1, sticky=tk.E, pady=5)
 
-        ttk.Spinbox(cps_frame, from_=1, to=50, textvariable=self.cps_var, width=10).pack(side=tk.LEFT)
+        ttk.Spinbox(cps_frame, from_=1, to=50, textvariable=self.cps_var, width=10).pack(
+            side=tk.LEFT
+        )
         self.cps_display = ttk.Label(cps_frame, text=f"{self.cps_var.get()}")
         self.cps_display.pack(side=tk.LEFT, padx=(5, 0))
         self.cps_var.trace_add("write", self._update_cps_display)
 
         # X Position
-        ttk.Label(main_frame, text="X Position (relative):").grid(row=4, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="X Position (relative):").grid(
+            row=4, column=0, sticky=tk.W, pady=5
+        )
         x_frame = ttk.Frame(main_frame)
         x_frame.grid(row=4, column=1, sticky=tk.E, pady=5)
 
-        ttk.Scale(x_frame, from_=0.0, to=1.0, variable=self.pos_x_var, orient=tk.HORIZONTAL, length=150).pack(
-            side=tk.LEFT
-        )
+        ttk.Scale(
+            x_frame, from_=0.0, to=1.0, variable=self.pos_x_var, orient=tk.HORIZONTAL, length=150
+        ).pack(side=tk.LEFT)
         self.x_display = ttk.Label(x_frame, text=f"{self.pos_x_var.get():.2f}")
         self.x_display.pack(side=tk.LEFT, padx=(5, 0))
         self.pos_x_var.trace_add("write", self._update_x_display)
 
         # Y Position
-        ttk.Label(main_frame, text="Y Position (relative):").grid(row=5, column=0, sticky=tk.W, pady=5)
+        ttk.Label(main_frame, text="Y Position (relative):").grid(
+            row=5, column=0, sticky=tk.W, pady=5
+        )
         y_frame = ttk.Frame(main_frame)
         y_frame.grid(row=5, column=1, sticky=tk.E, pady=5)
 
-        ttk.Scale(y_frame, from_=0.0, to=1.0, variable=self.pos_y_var, orient=tk.HORIZONTAL, length=150).pack(
-            side=tk.LEFT
-        )
+        ttk.Scale(
+            y_frame, from_=0.0, to=1.0, variable=self.pos_y_var, orient=tk.HORIZONTAL, length=150
+        ).pack(side=tk.LEFT)
         self.y_display = ttk.Label(y_frame, text=f"{self.pos_y_var.get():.2f}")
         self.y_display.pack(side=tk.LEFT, padx=(5, 0))
         self.pos_y_var.trace_add("write", self._update_y_display)
 
         # Show overlay
-        ttk.Checkbutton(main_frame, text="Show visual overlay", variable=self.show_overlay_var).grid(
-            row=6, column=0, columnspan=2, sticky=tk.W, pady=10
-        )
+        ttk.Checkbutton(
+            main_frame, text="Show visual overlay", variable=self.show_overlay_var
+        ).grid(row=6, column=0, columnspan=2, sticky=tk.W, pady=10)
 
         # Separator
-        ttk.Separator(main_frame, orient="horizontal").grid(row=7, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10)
+        ttk.Separator(main_frame, orient="horizontal").grid(
+            row=7, column=0, columnspan=2, sticky=(tk.W, tk.E), pady=10
+        )
 
         # Control buttons
         button_frame = ttk.Frame(main_frame)
         button_frame.grid(row=8, column=0, columnspan=2, pady=10)
 
-        self.start_button = ttk.Button(button_frame, text="▶ Start", command=self._start_clicker, width=15)
+        self.start_button = ttk.Button(
+            button_frame, text="▶ Start", command=self._start_clicker, width=15
+        )
         self.start_button.pack(side=tk.LEFT, padx=5)
 
         self.stop_button = ttk.Button(
@@ -111,12 +127,16 @@ class AutoClickerGUI:
         )
 
         log_frame = ttk.Frame(main_frame)
-        log_frame.grid(row=10, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10))
+        log_frame.grid(
+            row=10, column=0, columnspan=2, sticky=(tk.W, tk.E, tk.N, tk.S), pady=(0, 10)
+        )
 
         scrollbar = ttk.Scrollbar(log_frame)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        self.log_text = tk.Text(log_frame, height=8, width=45, state=tk.DISABLED, yscrollcommand=scrollbar.set)
+        self.log_text = tk.Text(
+            log_frame, height=8, width=45, state=tk.DISABLED, yscrollcommand=scrollbar.set
+        )
         self.log_text.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
         scrollbar.config(command=self.log_text.yview)
 

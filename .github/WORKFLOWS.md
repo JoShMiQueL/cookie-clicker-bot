@@ -4,23 +4,58 @@ This document describes all automated workflows in this repository.
 
 ## 📋 Table of Contents
 
+- [CI Pipeline Hierarchy](#ci-pipeline-hierarchy)
 - [Code Quality](#code-quality)
 - [Build & Release](#build--release)
 - [PR Automation](#pr-automation)
 - [Maintenance](#maintenance)
 - [Issue Templates](#issue-templates)
 
+## CI Pipeline Hierarchy
+
+The CI/CD pipeline follows a hierarchical structure to ensure quality:
+
+```
+┌─────────────────────────────────────┐
+│  Stage 1: Quality Checks (Parallel) │
+├─────────────────────────────────────┤
+│  • Lint & Format (pre-commit)       │
+│  • PR Validation (title, branch)    │
+└─────────────────────────────────────┘
+              ↓ (only if all pass)
+┌─────────────────────────────────────┐
+│  Stage 2: Build                      │
+├─────────────────────────────────────┤
+│  • Build Executable                  │
+│  • Generate Checksums                │
+│  • Upload Artifacts                  │
+│  • Comment PR with Build Info        │
+└─────────────────────────────────────┘
+```
+
+**Key Benefits:**
+- ⚡ Fast feedback (parallel checks)
+- 🛡️ No builds on failing code
+- 💰 Saves CI minutes
+- ✅ Ensures quality before build
+
+**Main Workflow:** `ci-pipeline.yml`
+
 ## Code Quality
 
-### CI (`ci.yml`)
-**Triggers:** Push, Pull Request
-**Purpose:** Runs pre-commit hooks on all code changes
+### CI Pipeline (`ci-pipeline.yml`)
+**Triggers:** Push, Pull Request, Manual
+**Purpose:** Orchestrates all quality checks and build process
 
-- Lints code with Ruff
-- Formats code automatically
-- Validates YAML/TOML files
-- Checks for trailing whitespace
-- Validates conventional commits
+**Stage 1 - Quality Checks (Parallel):**
+- Lint & Format with pre-commit
+- PR validation (title, branch name)
+
+**Stage 2 - Build (Only if Stage 1 passes):**
+- Build executable
+- Generate checksums
+- Upload artifacts
+- Comment PR with build info
 
 ### CodeQL (`codeql.yml`)
 **Triggers:** Push, Pull Request, Weekly schedule
@@ -41,11 +76,15 @@ This document describes all automated workflows in this repository.
 
 ## Build & Release
 
-### Build (`build.yml`)
-**Triggers:** Push to main/develop, Pull Request
-**Purpose:** Builds Windows executable
+### CI Pipeline (`ci-pipeline.yml`)
+**Triggers:** Push, Pull Request, Manual
+**Purpose:** Main CI/CD pipeline with hierarchical execution
 
-**Features:**
+**Stage 1 - Quality Checks (Parallel):**
+- Lint & Format with pre-commit
+- PR validation (title, branch name)
+
+**Stage 2 - Build (Only if Stage 1 passes):**
 - Builds with PyInstaller
 - Calculates executable size
 - Generates SHA256 checksum
@@ -97,11 +136,13 @@ This document describes all automated workflows in this repository.
 
 ## PR Automation
 
-### PR Labeler (`pr-labeler.yml`)
+### PR Labeler & Statistics (`pr-labeler.yml`)
 **Triggers:** PR opened/updated
-**Purpose:** Auto-labels pull requests
+**Purpose:** Auto-labels pull requests and generates statistics
 
-**Labels Applied:**
+**Features:**
+
+**1. Auto-Labeling:**
 
 **By Size:**
 - `size/xs` - < 10 lines
@@ -133,6 +174,16 @@ This document describes all automated workflows in this repository.
 **Special:**
 - `breaking-change` - Contains `!:` or `BREAKING CHANGE`
 - `needs-description` - PR body < 10 chars
+
+**2. PR Statistics Comment:**
+
+Automatically posts a beautiful statistics comment with:
+- 📈 Changes overview table (additions, deletions, net change)
+- 📁 Files changed/added/modified/deleted
+- 📝 Commit count
+- 📦 PR size indicator (🟢 Small / 🟡 Medium / 🟠 Large / 🔴 Very Large)
+- 📄 Top 5 file types
+- 💡 Auto-updates on each push (no spam)
 
 ### PR Checks (`pr-checks.yml`)
 **Triggers:** PR opened/updated
@@ -275,7 +326,7 @@ This repository **strictly enforces** [Conventional Commits](https://conventiona
 
 **File**: `.pre-commit-config.yaml`
 
-When you commit locally:
+{{ ... }}
 ```bash
 git commit -m "feat: add new feature"
 ```
