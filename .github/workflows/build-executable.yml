@@ -1,0 +1,62 @@
+name: Build Executable
+
+on:
+  workflow_call:
+    outputs:
+      checksum:
+        description: "SHA256 checksum of the executable"
+        value: ${{ jobs.build.outputs.checksum }}
+      size-mb:
+        description: "Size of the executable in MB"
+        value: ${{ jobs.build.outputs.size-mb }}
+
+jobs:
+  build:
+    runs-on: windows-latest
+    outputs:
+      checksum: ${{ steps.checksum.outputs.sha256 }}
+      size-mb: ${{ steps.size.outputs.size_mb }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Build executable
+        run: pyinstaller CookieClickerBot.spec
+
+      - name: Get executable size
+        id: size
+        shell: pwsh
+        run: |
+          $size = (Get-Item "dist\CookieClickerBot.exe").Length
+          $sizeMB = [math]::Round($size / 1MB, 2)
+          echo "size_bytes=$size" >> $env:GITHUB_OUTPUT
+          echo "size_mb=$sizeMB" >> $env:GITHUB_OUTPUT
+          echo "Executable size: $sizeMB MB"
+
+      - name: Calculate checksum
+        id: checksum
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash "dist\CookieClickerBot.exe" -Algorithm SHA256).Hash
+          echo "sha256=$hash" >> $env:GITHUB_OUTPUT
+          echo "SHA256: $hash"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CookieClickerBot-${{ github.sha }}
+          path: dist/CookieClickerBot.exe
+          retention-days: 30

@@ -126,14 +126,6 @@ The CI/CD pipeline follows a hierarchical structure to ensure quality:
 4. Check "Mark as pre-release" if needed
 5. Click "Run workflow"
 
-### Changelog (`changelog.yml`)
-**Triggers:** Tags (`v*.*.*`), Manual
-**Purpose:** Generates changelog
-
-- Uses git-cliff
-- Follows conventional commits
-- Auto-commits to repository
-
 ## PR Automation
 
 ### PR Labeler & Statistics (`pr-labeler.yml`)

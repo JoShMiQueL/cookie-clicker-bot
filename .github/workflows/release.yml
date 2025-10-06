@@ -1,109 +1,134 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'           # Production release (e.g., v1.0.0)
-      - 'v*.*.*-beta.*'    # Beta release (e.g., v1.0.0-beta.1)
-      - 'v*.*.*-alpha.*'   # Alpha release (e.g., v1.0.0-alpha.1)
-      - 'v*.*.*-rc.*'      # Release candidate (e.g., v1.0.0-rc.1)
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to release (e.g., v1.0.0, v1.0.0-beta.1)'
+      release-type:
+        description: 'Release type'
         required: true
-        type: string
-      prerelease:
-        description: 'Mark as pre-release'
+        type: choice
+        options:
+          - auto      # Automatic based on conventional commits
+          - patch     # Bug fixes (1.0.0 -> 1.0.1)
+          - minor     # New features (1.0.0 -> 1.1.0)
+          - major     # Breaking changes (1.0.0 -> 2.0.0)
+          - prerelease-beta
+          - prerelease-alpha
+          - prerelease-rc
+        default: auto
+      custom-version:
+        description: 'Custom version (optional, overrides release-type)'
         required: false
-        type: boolean
-        default: false
+        type: string
+
+permissions:
+  contents: write
 
 jobs:
-  release:
-    runs-on: windows-latest
+  prepare-release:
+    runs-on: ubuntu-latest
+    outputs:
+      new-tag: ${{ steps.version.outputs.new_tag }}
+      new-version: ${{ steps.version.outputs.new_version }}
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Calculate next version
+        id: version
+        uses: mathieudutour/github-tag-action@v6.2
         with:
-          python-version: "3.12"
-          cache: 'pip'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: ${{ github.event.inputs.release-type == 'auto' && 'patch' || github.event.inputs.release-type }}
+          custom_tag: ${{ github.event.inputs.custom-version }}
+          release_branches: main
+          pre_release_branches: develop
+          append_to_pre_release_tag: ${{ contains(github.event.inputs.release-type, 'beta') && 'beta' || contains(github.event.inputs.release-type, 'alpha') && 'alpha' || contains(github.event.inputs.release-type, 'rc') && 'rc' || '' }}
+          dry_run: false
 
-      - name: Install dependencies
+      - name: Update pyproject.toml version
+        shell: bash
         run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          new_version="${{ steps.version.outputs.new_version }}"
+          sed -i "s/^version = .*/version = \"$new_version\"/" pyproject.toml
 
-      - name: Build executable
-        run: pyinstaller CookieClickerBot.spec
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add pyproject.toml
+          git commit -m "chore: bump version to $new_version"
+          git push
 
-      - name: Calculate checksum
-        id: checksum
-        shell: pwsh
+  build:
+    needs: prepare-release
+    uses: ./.github/workflows/build-executable.yml
+
+  release:
+    needs: [prepare-release, build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: CookieClickerBot-${{ github.sha }}
+          path: dist/
+
+      - name: Create checksum file
+        shell: bash
         run: |
-          $hash = (Get-FileHash "dist\CookieClickerBot.exe" -Algorithm SHA256).Hash
-          echo "sha256=$hash" >> $env:GITHUB_OUTPUT
-          $hash | Out-File -FilePath dist/CookieClickerBot.exe.sha256
+          echo "${{ needs.build.outputs.checksum }}" > dist/CookieClickerBot.exe.sha256
+
+      - name: Generate changelog
+        id: changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: CHANGELOG_RELEASE.md
 
       - name: Determine release type
         id: release_type
-        shell: pwsh
+        shell: bash
         run: |
-          # Manual workflow dispatch
-          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
-            $version = "${{ github.event.inputs.version }}"
-            $isPrerelease = "${{ github.event.inputs.prerelease }}" -eq "true"
+          tag="${{ needs.prepare-release.outputs.new-tag }}"
 
-            echo "tag=$version" >> $env:GITHUB_OUTPUT
-            echo "prerelease=$isPrerelease" >> $env:GITHUB_OUTPUT
-            echo "name=Release $version" >> $env:GITHUB_OUTPUT
-
-            if ($isPrerelease) {
-              echo "type=prerelease" >> $env:GITHUB_OUTPUT
-            } else {
-              echo "type=release" >> $env:GITHUB_OUTPUT
-            }
+          # Check if it's a pre-release version
+          if ($tag -match "-beta") {
+            echo "type=beta" >> $env:GITHUB_OUTPUT
+            echo "prerelease=true" >> $env:GITHUB_OUTPUT
+            echo "name=Beta Release $tag" >> $env:GITHUB_OUTPUT
           }
-          # Tag-based releases
-          elseif ("${{ github.ref }}" -match "refs/tags/v") {
-            $tag = "${{ github.ref_name }}"
-
-            # Check if it's a pre-release version
-            if ($tag -match "-beta\.|beta-") {
-              echo "type=beta" >> $env:GITHUB_OUTPUT
-              echo "prerelease=true" >> $env:GITHUB_OUTPUT
-              echo "name=Beta Release $tag" >> $env:GITHUB_OUTPUT
-            }
-            elseif ($tag -match "-alpha\.|alpha-") {
-              echo "type=alpha" >> $env:GITHUB_OUTPUT
-              echo "prerelease=true" >> $env:GITHUB_OUTPUT
-              echo "name=Alpha Release $tag" >> $env:GITHUB_OUTPUT
-            }
-            elseif ($tag -match "-rc\.|rc-") {
-              echo "type=rc" >> $env:GITHUB_OUTPUT
-              echo "prerelease=true" >> $env:GITHUB_OUTPUT
-              echo "name=Release Candidate $tag" >> $env:GITHUB_OUTPUT
-            }
-            else {
-              echo "type=release" >> $env:GITHUB_OUTPUT
-              echo "prerelease=false" >> $env:GITHUB_OUTPUT
-              echo "name=Release $tag" >> $env:GITHUB_OUTPUT
-            }
-
-            echo "tag=$tag" >> $env:GITHUB_OUTPUT
+          elseif ($tag -match "-alpha") {
+            echo "type=alpha" >> $env:GITHUB_OUTPUT
+            echo "prerelease=true" >> $env:GITHUB_OUTPUT
+            echo "name=Alpha Release $tag" >> $env:GITHUB_OUTPUT
           }
+          elseif ($tag -match "-rc") {
+            echo "type=rc" >> $env:GITHUB_OUTPUT
+            echo "prerelease=true" >> $env:GITHUB_OUTPUT
+            echo "name=Release Candidate $tag" >> $env:GITHUB_OUTPUT
+          }
+          else {
+            echo "type=release" >> $env:GITHUB_OUTPUT
+            echo "prerelease=false" >> $env:GITHUB_OUTPUT
+            echo "name=Release $tag" >> $env:GITHUB_OUTPUT
+          }
+
+          echo "tag=$tag" >> $env:GITHUB_OUTPUT
 
       - name: Generate release notes
         id: release_notes
         shell: pwsh
         run: |
           $type = "${{ steps.release_type.outputs.type }}"
-          $sha = "${{ steps.checksum.outputs.sha256 }}"
+          $sha = "${{ needs.build.outputs.checksum }}"
 
           $badge = switch ($type) {
             "release" { "🚀" }
@@ -149,14 +174,22 @@ jobs:
           ``````
 
           ### 📝 What's Changed
-          See the [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+
+          "@
+
+          # Combine release notes with changelog
+          $body | Out-File -FilePath release_notes.md -Encoding utf8
+          if (Test-Path CHANGELOG_RELEASE.md) {
+            Get-Content CHANGELOG_RELEASE.md | Add-Content release_notes.md -Encoding utf8
+          }
+
+          # Add footer
+          @"
 
           ---
 
-          **Full Changelog:** https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.sha }}
-          "@
-
-          $body | Out-File -FilePath release_notes.md -Encoding utf8
+          **Full Changelog:** https://github.com/${{ github.repository }}/releases/tag/${{ steps.release_type.outputs.tag }}
+          "@ | Add-Content release_notes.md -Encoding utf8
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
