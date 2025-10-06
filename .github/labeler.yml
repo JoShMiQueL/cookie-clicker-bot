@@ -1,30 +1,36 @@
-# Configuration for PR labeler
-# Labels PRs based on changed files
+# Label PRs based on changed files
 
-"type: documentation":
-  - changed-files:
-      - any-glob-to-any-file: ["*.md", "docs/**/*"]
+'area/gui':
+  - src/gui.py
+  - src/overlay.py
 
-"type: ci/cd":
-  - changed-files:
-      - any-glob-to-any-file: [".github/**/*", "*.yml", "*.yaml"]
+'area/core':
+  - src/clicker.py
+  - src/window_finder.py
+  - src/config.py
 
-"type: dependencies":
-  - changed-files:
-      - any-glob-to-any-file: ["requirements.txt", "pyproject.toml", "setup.py"]
+'area/build':
+  - CookieClickerBot.spec
+  - pyproject.toml
 
-"type: build":
-  - changed-files:
-      - any-glob-to-any-file: ["build/**/*", "*.spec", "build_exe.py"]
+'area/ci':
+  - .github/**/*
+  - .pre-commit-config.yaml
 
-"area: gui":
-  - changed-files:
-      - any-glob-to-any-file: ["src/gui.py", "src/overlay.py"]
+'area/docs':
+  - README.md
+  - CONTRIBUTING.md
+  - docs/**/*
+  - '**/*.md'
 
-"area: core":
-  - changed-files:
-      - any-glob-to-any-file: ["src/clicker.py", "src/window_finder.py", "src/config.py"]
+'area/tests':
+  - tests/**/*
+  - '**/test_*.py'
 
-"area: cli":
-  - changed-files:
-      - any-glob-to-any-file: ["src/main.py"]
+'dependencies':
+  - pyproject.toml
+
+'config':
+  - ruff.toml
+  - .pre-commit-config.yaml
+  - pyproject.toml

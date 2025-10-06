@@ -10,7 +10,7 @@ def build_executable():
     print("🔨 Building Cookie Clicker Autoclicker...")
     print("=" * 60)
 
-    spec_file = Path(__file__).parent.parent / "CookieClickerBot.spec"
+    spec_file = Path(__file__).parent / "CookieClickerBot.spec"
 
     if not spec_file.exists():
         print(f"❌ Spec file not found: {spec_file}")
