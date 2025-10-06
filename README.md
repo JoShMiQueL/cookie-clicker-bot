@@ -1,7 +1,6 @@
 # 🍪 Cookie Clicker Autoclicker
 
-[![Build Status](https://github.com/JoShMiQueL/cookie-clicker-bot/workflows/Build%20Executable/badge.svg)](https://github.com/JoShMiQueL/cookie-clicker-bot/actions)
-[![Lint Status](https://github.com/JoShMiQueL/cookie-clicker-bot/workflows/Lint%20and%20Format/badge.svg)](https://github.com/JoShMiQueL/cookie-clicker-bot/actions)
+[![Build Status](https://github.com/JoShMiQueL/cookie-clicker-bot/workflows/CI%20Pipeline/badge.svg)](https://github.com/JoShMiQueL/cookie-clicker-bot/actions/workflows/ci-pipeline.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
