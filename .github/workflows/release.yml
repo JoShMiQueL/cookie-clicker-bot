@@ -92,7 +92,6 @@ jobs:
           args: --latest --strip header
         env:
           OUTPUT: CHANGELOG_RELEASE.md
-
       - name: Determine release type
         id: release_type
         shell: bash
@@ -100,34 +99,30 @@ jobs:
           tag="${{ needs.prepare-release.outputs.new-tag }}"
 
           # Check if it's a pre-release version
-          if ($tag -match "-beta") {
-            echo "type=beta" >> $env:GITHUB_OUTPUT
-            echo "prerelease=true" >> $env:GITHUB_OUTPUT
-            echo "name=Beta Release $tag" >> $env:GITHUB_OUTPUT
-          }
-          elseif ($tag -match "-alpha") {
-            echo "type=alpha" >> $env:GITHUB_OUTPUT
-            echo "prerelease=true" >> $env:GITHUB_OUTPUT
-            echo "name=Alpha Release $tag" >> $env:GITHUB_OUTPUT
-          }
-          elseif ($tag -match "-rc") {
-            echo "type=rc" >> $env:GITHUB_OUTPUT
-            echo "prerelease=true" >> $env:GITHUB_OUTPUT
-            echo "name=Release Candidate $tag" >> $env:GITHUB_OUTPUT
-          }
-          else {
-            echo "type=release" >> $env:GITHUB_OUTPUT
-            echo "prerelease=false" >> $env:GITHUB_OUTPUT
-            echo "name=Release $tag" >> $env:GITHUB_OUTPUT
-          }
+          if [[ "$tag" =~ -beta ]]; then
+            echo "type=beta" >> $GITHUB_OUTPUT
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+            echo "name=Beta Release $tag" >> $GITHUB_OUTPUT
+          elif [[ "$tag" =~ -alpha ]]; then
+            echo "type=alpha" >> $GITHUB_OUTPUT
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+            echo "name=Alpha Release $tag" >> $GITHUB_OUTPUT
+          elif [[ "$tag" =~ -rc ]]; then
+            echo "type=rc" >> $GITHUB_OUTPUT
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+            echo "name=Release Candidate $tag" >> $GITHUB_OUTPUT
+          else
+            echo "type=release" >> $GITHUB_OUTPUT
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+            echo "name=Release $tag" >> $GITHUB_OUTPUT
+          fi
 
-          echo "tag=$tag" >> $env:GITHUB_OUTPUT
+          echo "tag=$tag" >> $GITHUB_OUTPUT
 
       - name: Generate release notes
         id: release_notes
         shell: pwsh
         run: |
-          $type = "${{ steps.release_type.outputs.type }}"
           $sha = "${{ needs.build.outputs.checksum }}"
 
           $badge = switch ($type) {
