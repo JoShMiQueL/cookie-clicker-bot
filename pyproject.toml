@@ -1,6 +1,6 @@
 [project]
 name = "cookie-clicker-bot"
-version = "v1.0.1"
+version = "1.0.2"
 description = "Professional autoclicker for Cookie Clicker with GUI and real-time adjustments"
 authors = [
     {name = "JoShMiQueL", email = "joshmiquel.cs@gmail.com"}
