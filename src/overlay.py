@@ -1,5 +1,6 @@
-"""Module for the visual overlay showing where clicks are made."""
+"""Module for the visual overlay to show where the autoclicker is clicking."""
 
+import contextlib
 import threading
 import tkinter as tk
 
@@ -46,7 +47,9 @@ class ClickOverlay:
         self.root.geometry(f"{size}x{size}+{self.click_x - size // 2}+{self.click_y - size // 2}")
 
         # Canvas to draw the dot
-        self.canvas = tk.Canvas(self.root, width=size, height=size, bg="white", highlightthickness=0)
+        self.canvas = tk.Canvas(
+            self.root, width=size, height=size, bg="white", highlightthickness=0
+        )
         self.canvas.pack()
 
         # Draw a red circle with border
@@ -64,8 +67,12 @@ class ClickOverlay:
 
         # Draw a cross in the center
         cross_size = 12
-        self.canvas.create_line(center - cross_size, center, center + cross_size, center, fill="yellow", width=2)
-        self.canvas.create_line(center, center - cross_size, center, center + cross_size, fill="yellow", width=2)
+        self.canvas.create_line(
+            center - cross_size, center, center + cross_size, center, fill="yellow", width=2
+        )
+        self.canvas.create_line(
+            center, center - cross_size, center, center + cross_size, fill="yellow", width=2
+        )
 
         self.running = True
 
@@ -75,10 +82,8 @@ class ClickOverlay:
             self.click_x = x
             self.click_y = y
             size = 40
-            try:
+            with contextlib.suppress(Exception):
                 self.root.geometry(f"{size}x{size}+{x - size // 2}+{y - size // 2}")
-            except Exception:
-                pass  # If there's an error, ignore it
 
     def run(self):
         """Start the tkinter loop."""
@@ -89,7 +94,5 @@ class ClickOverlay:
         """Close the overlay."""
         if self.root and self.running:
             self.running = False
-            try:
+            with contextlib.suppress(Exception):
                 self.root.destroy()
-            except Exception:
-                pass  # If already destroyed, ignore the error

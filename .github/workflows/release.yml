@@ -1,16 +1,28 @@
-name: Create Release
+name: Release
 
 on:
   push:
     tags:
-      - "v*"
-
-permissions:
-  contents: write
+      - 'v*.*.*'           # Production release (e.g., v1.0.0)
+      - 'v*.*.*-beta.*'    # Beta release (e.g., v1.0.0-beta.1)
+      - 'v*.*.*-alpha.*'   # Alpha release (e.g., v1.0.0-alpha.1)
+      - 'v*.*.*-rc.*'      # Release candidate (e.g., v1.0.0-rc.1)
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0, v1.0.0-beta.1)'
+        required: true
+        type: string
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   release:
     runs-on: windows-latest
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,7 +31,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
           cache: 'pip'
 
       - name: Install dependencies
@@ -28,58 +40,145 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Build executable
-        run: |
-          pyinstaller CookieClickerBot.spec --clean
+        run: pyinstaller CookieClickerBot.spec
 
       - name: Calculate checksum
+        id: checksum
+        shell: pwsh
         run: |
-          certutil -hashfile dist/CookieClickerBot.exe SHA256 > dist/CookieClickerBot.exe.sha256
+          $hash = (Get-FileHash "dist\CookieClickerBot.exe" -Algorithm SHA256).Hash
+          echo "sha256=$hash" >> $env:GITHUB_OUTPUT
+          $hash | Out-File -FilePath dist/CookieClickerBot.exe.sha256
 
-      - name: Generate changelog
-        id: changelog
+      - name: Determine release type
+        id: release_type
+        shell: pwsh
         run: |
-          $previousTag = git describe --tags --abbrev=0 HEAD^ 2>$null
-          if ($previousTag) {
-            $changelog = git log "$previousTag..HEAD" --pretty=format:"- %s (%h)" --no-merges
-          } else {
-            $changelog = git log --pretty=format:"- %s (%h)" --no-merges
+          # Manual workflow dispatch
+          if ("${{ github.event_name }}" -eq "workflow_dispatch") {
+            $version = "${{ github.event.inputs.version }}"
+            $isPrerelease = "${{ github.event.inputs.prerelease }}" -eq "true"
+
+            echo "tag=$version" >> $env:GITHUB_OUTPUT
+            echo "prerelease=$isPrerelease" >> $env:GITHUB_OUTPUT
+            echo "name=Release $version" >> $env:GITHUB_OUTPUT
+
+            if ($isPrerelease) {
+              echo "type=prerelease" >> $env:GITHUB_OUTPUT
+            } else {
+              echo "type=release" >> $env:GITHUB_OUTPUT
+            }
           }
-          $changelog = $changelog -join "`n"
-          echo "CHANGELOG<<EOF" >> $env:GITHUB_OUTPUT
-          echo $changelog >> $env:GITHUB_OUTPUT
-          echo "EOF" >> $env:GITHUB_OUTPUT
+          # Tag-based releases
+          elseif ("${{ github.ref }}" -match "refs/tags/v") {
+            $tag = "${{ github.ref_name }}"
+
+            # Check if it's a pre-release version
+            if ($tag -match "-beta\.|beta-") {
+              echo "type=beta" >> $env:GITHUB_OUTPUT
+              echo "prerelease=true" >> $env:GITHUB_OUTPUT
+              echo "name=Beta Release $tag" >> $env:GITHUB_OUTPUT
+            }
+            elseif ($tag -match "-alpha\.|alpha-") {
+              echo "type=alpha" >> $env:GITHUB_OUTPUT
+              echo "prerelease=true" >> $env:GITHUB_OUTPUT
+              echo "name=Alpha Release $tag" >> $env:GITHUB_OUTPUT
+            }
+            elseif ($tag -match "-rc\.|rc-") {
+              echo "type=rc" >> $env:GITHUB_OUTPUT
+              echo "prerelease=true" >> $env:GITHUB_OUTPUT
+              echo "name=Release Candidate $tag" >> $env:GITHUB_OUTPUT
+            }
+            else {
+              echo "type=release" >> $env:GITHUB_OUTPUT
+              echo "prerelease=false" >> $env:GITHUB_OUTPUT
+              echo "name=Release $tag" >> $env:GITHUB_OUTPUT
+            }
+
+            echo "tag=$tag" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Generate release notes
+        id: release_notes
+        shell: pwsh
+        run: |
+          $type = "${{ steps.release_type.outputs.type }}"
+          $sha = "${{ steps.checksum.outputs.sha256 }}"
+
+          $badge = switch ($type) {
+            "release" { "🚀" }
+            "beta" { "🧪" }
+            "alpha" { "⚗️" }
+            "rc" { "🎯" }
+            default { "📦" }
+          }
+
+          $warning = ""
+          if ("${{ steps.release_type.outputs.prerelease }}" -eq "true") {
+            $warning = @"
+
+            > ⚠️ **Pre-release Version**
+            > This is a pre-release version and may contain bugs or incomplete features.
+            > Use at your own risk. For stable releases, use the latest non-pre-release version.
+            "@
+          }
+
+          $body = @"
+          ## $badge ${{ steps.release_type.outputs.name }}
+          $warning
+
+          **Release Type:** ``$type``
+          **SHA256:** ``$sha``
+
+          ### 📥 Installation
+          1. Download ``CookieClickerBot.exe``
+          2. Run the executable
+          3. No installation required!
+
+          ### ✅ Verification
+          Verify the integrity of the downloaded file:
+
+          **PowerShell:**
+          ``````powershell
+          (Get-FileHash CookieClickerBot.exe -Algorithm SHA256).Hash -eq "$sha"
+          ``````
+
+          **Command Prompt:**
+          ``````cmd
+          certutil -hashfile CookieClickerBot.exe SHA256
+          ``````
+
+          ### 📝 What's Changed
+          See the [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+
+          ---
+
+          **Full Changelog:** https://github.com/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.sha }}
+          "@
+
+          $body | Out-File -FilePath release_notes.md -Encoding utf8
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ steps.release_type.outputs.tag || github.ref_name }}
+          name: ${{ steps.release_type.outputs.name }}
+          prerelease: ${{ steps.release_type.outputs.prerelease }}
+          body_path: release_notes.md
           files: |
             dist/CookieClickerBot.exe
             dist/CookieClickerBot.exe.sha256
-          body: |
-            ## 🎮 Cookie Clicker Autoclicker ${{ github.ref_name }}
-
-            ### 📦 Downloads
-            - **Windows Executable**: CookieClickerBot.exe
-            - **SHA256 Checksum**: CookieClickerBot.exe.sha256
-
-            ### ✨ What's New
-            ${{ steps.changelog.outputs.CHANGELOG }}
-
-            ### 📝 Installation
-            1. Download `CookieClickerBot.exe`
-            2. Run the executable (no installation required)
-            3. Open Cookie Clicker in Steam
-            4. Click "Start" in the GUI
-
-            ### 🔒 Security
-            Verify the download integrity using the SHA256 checksum:
-            ```bash
-            certutil -hashfile CookieClickerBot.exe SHA256
-            ```
-
-            ### 📚 Documentation
-            See [README.md](https://github.com/${{ github.repository }}/blob/main/README.md) for full documentation.
-          draft: false
-          prerelease: false
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update latest release tag
+        if: steps.release_type.outputs.type == 'release'
+        shell: pwsh
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+          # Update or create 'latest' tag
+          git tag -f latest
+          git push -f origin latest

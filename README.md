@@ -3,9 +3,10 @@
 [![Build Status](https://github.com/JoShMiQueL/cookie-clicker-bot/workflows/Build%20Executable/badge.svg)](https://github.com/JoShMiQueL/cookie-clicker-bot/actions)
 [![Lint Status](https://github.com/JoShMiQueL/cookie-clicker-bot/workflows/Lint%20and%20Format/badge.svg)](https://github.com/JoShMiQueL/cookie-clicker-bot/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 
 Professional autoclicker for Cookie Clicker (Steam) with graphical interface, real-time adjustments, and visual overlay.
 
@@ -22,57 +23,75 @@ Professional autoclicker for Cookie Clicker (Steam) with graphical interface, re
 - **🔍 Auto-detection**: Automatically finds the Cookie Clicker window
 - **🏗️ Professional Architecture**: Modular design following SOLID principles
 
-## 📦 Installation
+## 🚀 Quick Start
 
-### Option 1: Download Executable (Easiest)
+### For End Users (Easiest)
 
-1. Go to [Releases](https://github.com/JoShMiQueL/cookie-clicker-bot/releases)
-2. Download `CookieClickerBot.exe` from the latest release
-3. Run the executable (no Python installation required)
+1. **Download** `CookieClickerBot.exe` from [Releases](https://github.com/JoShMiQueL/cookie-clicker-bot/releases)
+2. **Run** the executable (no installation needed!)
+3. **Use:**
+   - Open Cookie Clicker in Steam (windowed mode)
+   - Click "Start" in the bot
+   - Adjust settings in real-time
+   - Click "Stop" when done
 
-### Option 2: From Source
+### For Developers
 
 ```bash
-# Clone the repository
+# Clone and setup
 git clone https://github.com/JoShMiQueL/cookie-clicker-bot.git
 cd cookie-clicker-bot
 
-# Install dependencies
-pip install -r requirements.txt
+# Install in development mode
+pip install -e ".[dev]"
 
-# Run the GUI (option 1 - module)
+# Setup pre-commit hooks
+setup-hooks
+
+# Run GUI
 python -m src.gui
 
-# Run the GUI (option 2 - script)
-python scripts/run_gui.py
-
-# Or run the CLI version
+# Or run CLI
 python -m src.main
-python scripts/run_cli.py
 ```
 
-## 🚀 Usage
-
-### GUI Version (Recommended)
-
-1. Open Cookie Clicker in Steam (windowed mode recommended)
-2. Run `CookieClickerBot.exe` or `python -m src.gui`
-3. Adjust settings in the interface:
-   - **CPS**: Clicks per second (1-50)
-   - **Position X/Y**: Adjust click position (0.0-1.0)
-   - **Visual Overlay**: Enable/disable visual indicator
-4. Click **▶ Start** to begin
-5. **Real-time adjustments**: Modify settings while the bot is active
-6. Click **⏹ Stop** when done
-
-### CLI Version
-
+**Build executable:**
 ```bash
-# Edit src/config.py to adjust settings
-python -m src.main
-
-# Press F1 to stop
+python scripts/build.py
+# Find in dist/CookieClickerBot.exe
 ```
+
+## 💡 Usage Tips
+
+### Finding the Right Position
+
+1. Start the bot with overlay enabled
+2. See the red dot indicator
+3. Adjust X/Y sliders in real-time
+4. Watch the overlay move
+5. Fine-tune until it's on the cookie
+
+### Optimal Settings
+
+- **CPS**: 15-20 for best performance
+- **Position**: Adjust based on window size
+- **Overlay**: Enable for initial setup, disable for performance
+
+### Troubleshooting
+
+**Bot doesn't find the game?**
+- Make sure Cookie Clicker is running
+- Use windowed mode (not fullscreen)
+- Check the window title matches: "X cookies - Cookie Clicker"
+
+**Clicks in wrong position?**
+- Enable overlay to see where it clicks
+- Adjust X/Y position sliders
+- Changes apply in real-time
+
+**Bot stops immediately?**
+- Run as administrator for better compatibility
+- Check antivirus isn't blocking it
 
 ## 🏗️ Project Structure
 
@@ -80,55 +99,44 @@ python -m src.main
 cookie-clicker-bot/
 ├── src/                      # Source code
 │   ├── __init__.py
-│   ├── config.py
-│   ├── window_finder.py
-│   ├── clicker.py
-│   ├── overlay.py
-│   ├── gui.py
-│   └── main.py
+│   ├── config.py             # Configuration
+│   ├── window_finder.py      # Window detection
+│   ├── clicker.py            # Click automation
+│   ├── overlay.py            # Visual overlay
+│   ├── gui.py                # GUI application
+│   └── main.py               # CLI application
 ├── scripts/                  # Utility scripts
 │   ├── build.py              # Build executable
-│   └── setup_dev.py          # Setup dev environment
+│   └── setup_hooks.py        # Pre-commit hooks setup
 ├── .github/                  # GitHub configuration
 │   ├── workflows/            # CI/CD pipelines
-│   │   ├── lint.yml          # Linting and formatting
-│   │   ├── build.yml         # Build automation
-│   │   ├── release.yml       # Release automation
-│   │   ├── changelog.yml     # Changelog generation
-│   │   └── pr-labeler.yml    # PR auto-labeling
-│   └── labeler.yml           # PR label configuration
+│   ├── ISSUE_TEMPLATE/       # Issue templates
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   ├── WORKFLOWS.md          # Workflows documentation
+│   ├── CONVENTIONAL_COMMITS.md
+│   ├── labeler.yml           # PR label configuration
+│   └── labels.yml            # Label definitions
 ├── .pre-commit-config.yaml   # Pre-commit hooks config
+├── .commitlintrc.json        # Commitlint configuration
+├── .gitignore                # Git ignore rules
 ├── CookieClickerBot.spec     # PyInstaller configuration
-├── cliff.toml                # Changelog generator config
 ├── pyproject.toml            # Project configuration
-├── requirements.txt          # Runtime dependencies
-├── requirements-dev.txt      # Development dependencies
-├── LICENSE                   # MIT License
+├── ruff.toml                 # Ruff linter configuration
 ├── CONTRIBUTING.md           # Contribution guidelines
+├── LICENSE                   # MIT License
 └── README.md                 # This file
 ```
 
 ## 🛠️ Development
 
-### Setup Development Environment
+### Quick Setup
 
 ```bash
-# Install in development mode (hooks install automatically)
-pip install -e ".[dev]"
+pip install -e ".[dev]"  # Install with dev dependencies
+setup-hooks               # Setup pre-commit hooks
 ```
 
-This will:
-- Install all dependencies
-- Install development tools (ruff, pre-commit, pyinstaller)
-- **Automatically setup pre-commit hooks**
-- You're ready to develop!
-
-Alternative manual setup:
-```bash
-pip install -r requirements-dev.txt
-pre-commit install
-pre-commit install --hook-type commit-msg
-```
+**For detailed development instructions, see [CONTRIBUTING.md](CONTRIBUTING.md)**
 
 ### Git Hooks (Automatic)
 
@@ -160,15 +168,15 @@ This project uses:
 - **Automated PR labeling** based on changed files
 - **Automated releases** with changelog generation
 
-## 🔧 Configuration
+## ⚙️ Configuration
 
-Edit `src/config.py` to customize:
+Edit `src/config.py`:
 
 ```python
-CPS = 15                      # Clicks per second
+CPS = 15                      # Clicks per second (1-50)
 BIG_COOKIE_RELATIVE_X = 0.15  # X position (0.0-1.0)
 BIG_COOKIE_RELATIVE_Y = 0.39  # Y position (0.0-1.0)
-SHOW_OVERLAY = True           # Show visual overlay
+SHOW_OVERLAY = True           # Show visual indicator
 STOP_KEY = "f1"               # Stop key (CLI only)
 ```
 
@@ -176,59 +184,129 @@ STOP_KEY = "f1"               # Stop key (CLI only)
 
 ### Automated Workflows
 
-1. **Lint & Format** (`lint.yml`)
-   - Runs on every push and PR
-   - Checks code style with Ruff
-   - Ensures consistent formatting
+#### **Code Quality**
+- **CI** (`ci.yml`) - Runs pre-commit checks on every push/PR
+- **CodeQL** (`codeql.yml`) - Security analysis (weekly + on push)
+- **Dependency Review** (`dependency-review.yml`) - Reviews dependency changes in PRs
 
-2. **Build** (`build.yml`)
-   - Builds executable on every push to main
-   - Uploads artifacts for testing
-   - Generates checksums for releases
+#### **Build & Release**
+- **Build** (`build.yml`) - Builds executable on push to main/develop
+  - Comments PR with build size and checksum
+  - Uploads artifacts for testing
 
-3. **Release** (`release.yml`)
-   - Triggers on version tags (v*)
-   - Builds and publishes executable
-   - Generates changelog automatically
-   - Creates GitHub release with notes
+- **Release** (`release.yml`) - Automated releases
+  - **Tags** (`v*.*.*`) → Production release
+  - **Tags** (`v*.*.*-beta.*`) → Beta release
+  - **Tags** (`v*.*.*-alpha.*`) → Alpha release
+  - **Tags** (`v*.*.*-rc.*`) → Release candidate
+  - **Manual trigger** → Custom version release
+  - Includes SHA256 checksums
+  - Auto-updates `latest` tag for production releases
 
-4. **PR Labeler** (`pr-labeler.yml`)
-   - Auto-labels PRs based on changed files
-   - Adds size labels (XS, S, M, L, XL)
-   - Categorizes by area (gui, core, cli)
+- **Changelog** (`changelog.yml`) - Auto-generates changelog on tags
+
+#### **PR Automation**
+- **PR Labeler** (`pr-labeler.yml`)
+  - Auto-labels by size (XS, S, M, L, XL)
+  - Labels by area (gui, core, build, ci, docs)
+  - Labels by conventional commit type
+  - Detects breaking changes
+
+- **PR Checks** (`pr-checks.yml`)
+  - Validates PR title (conventional commits)
+  - Checks for merge conflicts
+  - Validates branch naming convention
+  - Checks for linked issues
+
+#### **Maintenance**
+- **Stale** (`stale.yml`) - Marks inactive issues/PRs as stale
+- **Auto-merge** (`auto-merge.yml`) - Auto-merges Dependabot PRs (patch/minor)
+- **Welcome** (`welcome.yml`) - Welcomes first-time contributors
 
 ### Creating a Release
 
+**Production Release:**
 ```bash
-# Tag a new version
 git tag -a v1.0.0 -m "Release version 1.0.0"
 git push origin v1.0.0
-
-# GitHub Actions will automatically:
-# 1. Build the executable
-# 2. Generate changelog
-# 3. Create release with notes
-# 4. Upload executable and checksum
 ```
+
+**Beta Release:**
+```bash
+git tag -a v1.0.0-beta.1 -m "Beta release 1.0.0-beta.1"
+git push origin v1.0.0-beta.1
+```
+
+**Alpha Release:**
+```bash
+git tag -a v1.0.0-alpha.1 -m "Alpha release 1.0.0-alpha.1"
+git push origin v1.0.0-alpha.1
+```
+
+**Release Candidate:**
+```bash
+git tag -a v1.0.0-rc.1 -m "Release candidate 1.0.0-rc.1"
+git push origin v1.0.0-rc.1
+```
+
+**Manual Release (via GitHub UI):**
+1. Go to Actions → Release
+2. Click "Run workflow"
+3. Enter version (e.g., `v1.0.0-beta.1`)
+4. Check "Mark as pre-release" if needed
+5. Click "Run workflow"
+
+### Branch Naming Convention
+
+**Required format:** `type/description`
+
+**Valid types:**
+- `feat/` - New features
+- `fix/` - Bug fixes
+- `docs/` - Documentation
+- `style/` - Code style
+- `refactor/` - Refactoring
+- `perf/` - Performance
+- `test/` - Tests
+- `build/` - Build system
+- `ci/` - CI/CD
+- `chore/` - Maintenance
+- `hotfix/` - Hotfixes
+
+**Rules:**
+- Use lowercase letters, numbers, and hyphens only
+- Minimum 5 characters
+- Examples: `feat/add-overlay`, `fix/button-click`
 
 ## 📝 Contributing
 
+We welcome contributions! This project follows strict standards to maintain code quality.
+
+### Quick Start
+
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch: `git checkout -b feat/your-feature`
+3. Make your changes
+4. Commit using **Conventional Commits** (required)
+5. Push and open a Pull Request
 
-### Commit Convention
+### Requirements
 
-Use [Conventional Commits](https://www.conventionalcommits.org/):
-- `feat:` New features
-- `fix:` Bug fixes
-- `docs:` Documentation changes
-- `style:` Code style changes
-- `refactor:` Code refactoring
-- `test:` Test changes
-- `chore:` Build/tooling changes
+⚠️ **Conventional Commits are REQUIRED** - All commits and PR titles must follow the [Conventional Commits](https://conventionalcommits.org/) specification.
+
+**Quick Reference:**
+```bash
+git commit -m "feat: add new feature"
+git commit -m "fix: resolve bug"
+git commit -m "docs: update readme"
+```
+
+**See:**
+- 📖 [CONTRIBUTING.md](CONTRIBUTING.md) - Full contribution guide
+- 📝 [Conventional Commits Guide](.github/CONVENTIONAL_COMMITS.md) - Detailed commit format reference
+- 🔧 [Workflows Documentation](.github/WORKFLOWS.md) - CI/CD and automation
+
+**Note:** PRs with invalid commit formats will be automatically rejected by CI.
 
 ## 📄 License
 

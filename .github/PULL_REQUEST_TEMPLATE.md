@@ -1,9 +1,7 @@
 ## Description
-
-<!-- Provide a brief description of the changes in this PR -->
+<!-- Provide a brief description of your changes -->
 
 ## Type of Change
-
 <!-- Mark the relevant option with an "x" -->
 
 - [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
@@ -15,40 +13,34 @@
 - [ ] ⚡ Performance improvement
 - [ ] ✅ Test update
 - [ ] 🔧 Build/CI update
+- [ ] 🔒 Security fix
 
-## Related Issues
-
-<!-- Link any related issues here -->
-
-Closes #(issue number)
+## Related Issue
+<!-- Link to the issue this PR addresses -->
+Fixes #(issue number)
 
 ## Changes Made
+<!-- List the main changes in bullet points -->
 
-<!-- List the main changes made in this PR -->
-
-- 
-- 
-- 
+-
+-
+-
 
 ## Testing
+<!-- Describe how you tested your changes -->
 
-<!-- Describe the tests you ran to verify your changes -->
-
-- [ ] Tested GUI version
-- [ ] Tested CLI version
-- [ ] Tested executable build
-- [ ] Ran linting (`ruff check src/`)
-- [ ] Ran formatting (`ruff format src/`)
-- [ ] All pre-commit hooks pass
+- [ ] Tested locally
+- [ ] All CI checks pass
+- [ ] Added/updated tests
 
 ## Screenshots (if applicable)
-
 <!-- Add screenshots to help explain your changes -->
 
 ## Checklist
+<!-- Mark completed items with an "x" -->
 
-- [ ] My code follows the project's style guidelines
-- [ ] I have performed a self-review of my own code
+- [ ] My code follows the project's code style
+- [ ] I have performed a self-review of my code
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have made corresponding changes to the documentation
 - [ ] My changes generate no new warnings
@@ -57,5 +49,4 @@ Closes #(issue number)
 - [ ] Any dependent changes have been merged and published
 
 ## Additional Notes
-
-<!-- Add any additional notes for reviewers -->
+<!-- Add any additional context or notes for reviewers -->
