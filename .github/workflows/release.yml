@@ -123,6 +123,7 @@ jobs:
         id: release_notes
         shell: pwsh
         run: |
+          $type = "${{ steps.release_type.outputs.type }}"
           $sha = "${{ needs.build.outputs.checksum }}"
 
           $badge = switch ($type) {
@@ -135,12 +136,7 @@ jobs:
 
           $warning = ""
           if ("${{ steps.release_type.outputs.prerelease }}" -eq "true") {
-            $warning = @"
-
-            > ⚠️ **Pre-release Version**
-            > This is a pre-release version and may contain bugs or incomplete features.
-            > Use at your own risk. For stable releases, use the latest non-pre-release version.
-            "@
+            $warning = "> ⚠️ **Pre-release Version**`n> This is a pre-release version and may contain bugs or incomplete features.`n> Use at your own risk. For stable releases, use the latest non-pre-release version.`n"
           }
 
           $body = @"
