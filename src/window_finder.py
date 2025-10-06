@@ -11,9 +11,14 @@ class CookieClickerWindowFinder:
     @staticmethod
     def is_cookie_clicker_window(title: str) -> bool:
         """Verify if the title matches the dynamic Cookie Clicker pattern."""
-        # Pattern: "[number with possible commas] cookies - Cookie Clicker"
-        # Examples: "245 cookies", "1,111 cookies", "19,631 cookies"
-        pattern = r"^[\d,]+\s*cookies\s*-\s*Cookie Clicker$"
+        # Pattern: "[number] [optional: million/billion/trillion/etc.] cookies - Cookie Clicker"
+        # Examples:
+        #   - "245 cookies - Cookie Clicker"
+        #   - "1,111 cookies - Cookie Clicker"
+        #   - "72.197 million cookies - Cookie Clicker"
+        #   - "13.564 billion cookies - Cookie Clicker"
+        #   - "6.432 trillion cookies - Cookie Clicker"
+        pattern = r"^[\d,\.]+\s*(million|billion|trillion|quadrillion|quintillion)?\s*cookies\s*-\s*Cookie Clicker$"
         return bool(re.match(pattern, title, re.IGNORECASE))
 
     def find_window(self) -> int | None:
@@ -29,7 +34,8 @@ class CookieClickerWindowFinder:
         win32gui.EnumWindows(enum_window_callback, windows)
 
         if not windows:
-            print("❌ No window found with pattern 'X cookies - Cookie Clicker'")
+            print("❌ No window found with pattern '[number] [unit] cookies - Cookie Clicker'")
+            print("   Examples: '245 cookies', '72.197 million cookies', '13.564 billion cookies'")
             self._print_diagnostic_info()
             return None
 

@@ -81,7 +81,10 @@ python scripts/build.py
 **Bot doesn't find the game?**
 - Make sure Cookie Clicker is running
 - Use windowed mode (not fullscreen)
-- Check the window title matches: "X cookies - Cookie Clicker"
+- Check the window title matches one of these patterns:
+  - `245 cookies - Cookie Clicker`
+  - `72.197 million cookies - Cookie Clicker`
+  - `13.564 billion cookies - Cookie Clicker`
 
 **Clicks in wrong position?**
 - Enable overlay to see where it clicks
