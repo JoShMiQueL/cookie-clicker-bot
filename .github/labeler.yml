@@ -1,0 +1,30 @@
+# Configuration for PR labeler
+# Labels PRs based on changed files
+
+"type: documentation":
+  - changed-files:
+      - any-glob-to-any-file: ["*.md", "docs/**/*"]
+
+"type: ci/cd":
+  - changed-files:
+      - any-glob-to-any-file: [".github/**/*", "*.yml", "*.yaml"]
+
+"type: dependencies":
+  - changed-files:
+      - any-glob-to-any-file: ["requirements.txt", "pyproject.toml", "setup.py"]
+
+"type: build":
+  - changed-files:
+      - any-glob-to-any-file: ["build/**/*", "*.spec", "build_exe.py"]
+
+"area: gui":
+  - changed-files:
+      - any-glob-to-any-file: ["src/gui.py", "src/overlay.py"]
+
+"area: core":
+  - changed-files:
+      - any-glob-to-any-file: ["src/clicker.py", "src/window_finder.py", "src/config.py"]
+
+"area: cli":
+  - changed-files:
+      - any-glob-to-any-file: ["src/main.py"]

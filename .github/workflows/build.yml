@@ -1,0 +1,49 @@
+name: Build Executable
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*"
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Build executable
+        run: |
+          pyinstaller CookieClickerBot.spec --clean
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CookieClickerBot-Windows
+          path: dist/CookieClickerBot.exe
+          retention-days: 30
+
+      - name: Calculate checksum
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          certutil -hashfile dist/CookieClickerBot.exe SHA256 > dist/CookieClickerBot.exe.sha256
+
+      - name: Upload checksum
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-artifact@v4
+        with:
+          name: CookieClickerBot-Checksum
+          path: dist/CookieClickerBot.exe.sha256
