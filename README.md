@@ -110,6 +110,15 @@ cookie-clicker-bot/
 │   └── setup_hooks.py        # Pre-commit hooks setup
 ├── .github/                  # GitHub configuration
 │   ├── workflows/            # CI/CD pipelines
+│   │   ├── ci-pipeline.yml   # Main CI/CD pipeline
+│   │   ├── pr-checks.yml     # PR validation
+│   │   ├── pr-labeler.yml    # PR labeling & stats
+│   │   ├── release.yml       # Automated releases
+│   │   ├── changelog.yml     # Changelog generation
+│   │   ├── codeql.yml        # Security analysis
+│   │   ├── stale.yml         # Stale issues/PRs
+│   │   ├── auto-merge.yml    # Dependabot auto-merge
+│   │   └── welcome.yml       # Welcome contributors
 │   ├── ISSUE_TEMPLATE/       # Issue templates
 │   ├── PULL_REQUEST_TEMPLATE.md
 │   ├── WORKFLOWS.md          # Workflows documentation
