@@ -97,11 +97,13 @@ This document describes all automated workflows in this repository.
 
 ## PR Automation
 
-### PR Labeler (`pr-labeler.yml`)
+### PR Labeler & Statistics (`pr-labeler.yml`)
 **Triggers:** PR opened/updated
-**Purpose:** Auto-labels pull requests
+**Purpose:** Auto-labels pull requests and generates statistics
 
-**Labels Applied:**
+**Features:**
+
+**1. Auto-Labeling:**
 
 **By Size:**
 - `size/xs` - < 10 lines
@@ -133,6 +135,16 @@ This document describes all automated workflows in this repository.
 **Special:**
 - `breaking-change` - Contains `!:` or `BREAKING CHANGE`
 - `needs-description` - PR body < 10 chars
+
+**2. PR Statistics Comment:**
+
+Automatically posts a beautiful statistics comment with:
+- 📈 Changes overview table (additions, deletions, net change)
+- 📁 Files changed/added/modified/deleted
+- 📝 Commit count
+- 📦 PR size indicator (🟢 Small / 🟡 Medium / 🟠 Large / 🔴 Very Large)
+- 📄 Top 5 file types
+- 💡 Auto-updates on each push (no spam)
 
 ### PR Checks (`pr-checks.yml`)
 **Triggers:** PR opened/updated
