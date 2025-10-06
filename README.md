@@ -48,10 +48,7 @@ pip install -e ".[dev]"
 setup-hooks
 
 # Run GUI
-python -m src.gui
-
-# Or run CLI
-python -m src.main
+python main.py
 ```
 
 **Build executable:**
@@ -99,14 +96,14 @@ python scripts/build.py
 
 ```
 cookie-clicker-bot/
+├── main.py                   # GUI application entry point
 ├── src/                      # Source code
 │   ├── __init__.py
 │   ├── config.py             # Configuration
 │   ├── window_finder.py      # Window detection
 │   ├── clicker.py            # Click automation
 │   ├── overlay.py            # Visual overlay
-│   ├── gui.py                # GUI application
-│   └── main.py               # CLI application
+│   └── gui.py                # GUI implementation
 ├── scripts/                  # Utility scripts
 │   ├── build.py              # Build executable
 │   └── setup_hooks.py        # Pre-commit hooks setup
