@@ -35,6 +35,9 @@ jobs:
     if: github.event_name == 'pull_request'
     needs: quality-gate
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     outputs:
       pr-approved: ${{ steps.validation.outputs.approved }}
     steps:
