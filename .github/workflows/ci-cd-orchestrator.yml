@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Run Code Quality Checks
         id: quality
-        uses: ./.github/workflows/quality-checks.yml
+        uses: ./.github/actions/quality-checks
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -37,7 +37,11 @@ jobs:
     steps:
       - name: Run PR Validation
         id: validation
-        uses: ./.github/workflows/pr-management.yml
+        uses: ./.github/actions/pr-validation
+
+      - name: Run PR Statistics & Labeling
+        if: steps.validation.outputs.approved == 'true'
+        uses: ./.github/actions/pr-statistics
 
   # 🧪 Phase 3: Test Execution (runs on PRs and pushes when quality passes)
   test-execution:
@@ -85,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Generate Pipeline Report
-        uses: ./.github/workflows/pipeline-report.yml
+        uses: ./.github/actions/pipeline-report
         with:
           quality-result: ${{ needs.quality-gate.result }}
           pr-result: ${{ needs.pr-validation.result }}
