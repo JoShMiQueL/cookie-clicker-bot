@@ -60,7 +60,7 @@ jobs:
       always() &&
       needs.quality-gate.result == 'success' &&
       (needs.pr-validation.result == 'success' || needs.pr-validation.result == 'skipped')
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     outputs:
       tests-passed: ${{ steps.tests.outputs.passed }}
     steps:
