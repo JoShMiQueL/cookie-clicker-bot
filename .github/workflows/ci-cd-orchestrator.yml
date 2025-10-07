@@ -20,6 +20,9 @@ jobs:
     outputs:
       quality-passed: ${{ steps.quality.outputs.passed }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Run Code Quality Checks
         id: quality
         uses: ./.github/actions/quality-checks
@@ -35,6 +38,9 @@ jobs:
     outputs:
       pr-approved: ${{ steps.validation.outputs.approved }}
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Run PR Validation
         id: validation
         uses: ./.github/actions/pr-validation
@@ -88,6 +94,9 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Generate Pipeline Report
         uses: ./.github/actions/pipeline-report
         with:
