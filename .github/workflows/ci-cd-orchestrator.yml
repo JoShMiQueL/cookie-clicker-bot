@@ -97,6 +97,10 @@ jobs:
     needs: [quality-gate, pr-validation] # TODO: Add here 'test-execution' when tests are implemented
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -106,5 +110,6 @@ jobs:
         with:
           quality-result: ${{ needs.quality-gate.result }}
           pr-result: ${{ needs.pr-validation.result }}
-          test-result: ${{ needs.test-execution.result }}
-          tests-passed: ${{ needs.test-execution.outputs.tests-passed }}
+          # TODO: Remove comments when tests are implemented
+          # test-result: ${{ needs.test-execution.result }}
+          # tests-passed: ${{ needs.test-execution.outputs.tests-passed }}
