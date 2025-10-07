@@ -25,6 +25,7 @@ dist/
 .coverage
 htmlcov/
 .tox/
+.ruff_cache/
 
 # IDE
 .vscode/
@@ -47,4 +48,4 @@ desktop.ini
 .env.local
 
 # Auto-generated
-CHANGELOG.md
+# CHANGELOG.md is now versioned and updated by CI
