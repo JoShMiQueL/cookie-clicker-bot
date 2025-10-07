@@ -6,7 +6,7 @@ a = Analysis(
     ['main.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('pyproject.toml', '.'), ('cookie.ico', '.')],
     hiddenimports=[
         'src',
         'src.config',
@@ -14,6 +14,13 @@ a = Analysis(
         'src.clicker',
         'src.overlay',
         'src.gui',
+        'customtkinter',
+        'customtkinter.appearance_mode',
+        'customtkinter.scaling',
+        'customtkinter.theme',
+        'customtkinter.utility',
+        'customtkinter.widgets',
+        'customtkinter.windows',
         'win32api',
         'win32con',
         'win32gui',
@@ -53,4 +60,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon='cookie.ico',
 )
