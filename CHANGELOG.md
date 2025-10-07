@@ -1,3 +1,14 @@
+## [1.1.0] - 2025-10-07
+
+### 🚀 Features
+
+- Add automated changelog management with git-cliff (#10)
+- [**breaking**] Implement comprehensive ci/cd pipeline with solid principles (#12)
+- Improve cps ui with customtkinter modernization and new cps controls (#13)
+
+### 🐛 Bug Fixes
+
+- *(ci)* Resolve git-cliff command not found error in release pipeline
 ## [1.0.0] - 2025-10-06
 
 ### 🚀 Features
