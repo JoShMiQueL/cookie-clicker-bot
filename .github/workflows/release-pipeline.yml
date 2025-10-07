@@ -115,13 +115,16 @@ jobs:
           name: CookieClickerBot-${{ github.sha }}
           path: dist/
 
-      - name: Prepare release assets
-        run: |
-          # Create checksum file
-          echo "${{ needs.build-release.outputs.checksum }}" > dist/CookieClickerBot.exe.sha256
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+        env:
+          OUTPUT: CHANGELOG.md
 
-          # Generate changelog
-          git-cliff --config cliff.toml -o CHANGELOG.md
+      - name: Create checksum file
+        run: |
+          echo "${{ needs.build-release.outputs.checksum }}" > dist/CookieClickerBot.exe.sha256
 
       - name: Update CHANGELOG.md in repository
         run: |
