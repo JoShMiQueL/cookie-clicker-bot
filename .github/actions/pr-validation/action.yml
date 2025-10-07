@@ -38,14 +38,13 @@ runs:
           ci
           deps
         requireScope: false
-        subjectPattern: ^[a-z].+$
         wip: false
 
     - name: Check branch naming convention
       uses: deepakputhraya/action-branch-name@master
       with:
-        regex: '^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|hotfix)\/[a-z0-9-]+$|^(main|develop)$'
-        allowed_prefixes: 'feat,fix,docs,style,refactor,perf,test,build,ci,chore,hotfix'
+        regex: '^(feat|feature|fix|docs|style|refactor|perf|test|build|ci|chore|hotfix)\/[a-z0-9-]+$|^(main|develop)$'
+        allowed_prefixes: 'feat,feature,fix,docs,style,refactor,perf,test,build,ci,chore,hotfix'
         ignore: main,develop
         min_length: 5
 
