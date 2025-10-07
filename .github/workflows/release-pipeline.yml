@@ -1,0 +1,221 @@
+name: Release Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: 'Release type'
+        required: true
+        type: choice
+        options:
+          - auto      # Automatic based on conventional commits
+          - patch     # Bug fixes (1.0.0 -> 1.0.1)
+          - minor     # New features (1.0.0 -> 1.1.0)
+          - major     # Breaking changes (1.0.0 -> 2.0.0)
+          - prerelease-beta
+          - prerelease-alpha
+          - prerelease-rc
+        default: auto
+      custom-version:
+        description: 'Custom version (optional, overrides release-type)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  # 📋 Phase 1: Release Preparation
+  prepare-release:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    outputs:
+      new-tag: ${{ steps.version.outputs.new_tag }}
+      new-version: ${{ steps.version.outputs.new_version }}
+      release-type: ${{ steps.release_type.outputs.type }}
+      is-prerelease: ${{ steps.release_type.outputs.prerelease }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Calculate next version
+        id: version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: ${{ github.event.inputs.release-type == 'auto' && 'patch' || github.event.inputs.release-type }}
+          custom_tag: ${{ github.event.inputs.custom-version }}
+          release_branches: main
+          pre_release_branches: develop
+
+      - name: Update version in project files
+        run: |
+          new_version="${{ steps.version.outputs.new_version }}"
+
+          # Update pyproject.toml
+          if [ -f "pyproject.toml" ]; then
+            sed -i "s/^version = .*/version = \"$new_version\"/" pyproject.toml
+          fi
+
+          # Update any other version files if needed
+          echo "Version updated to: $new_version"
+
+      - name: Commit version changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git add pyproject.toml
+          git commit -m "chore: bump version to ${{ steps.version.outputs.new_version }}"
+          git push
+
+      - name: Determine release type
+        id: release_type
+        run: |
+          tag="${{ steps.version.outputs.new_tag }}"
+
+          # Check if it's a pre-release version
+          if [[ "$tag" =~ -beta ]]; then
+            echo "type=beta" >> $GITHUB_OUTPUT
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          elif [[ "$tag" =~ -alpha ]]; then
+            echo "type=alpha" >> $GITHUB_OUTPUT
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          elif [[ "$tag" =~ -rc ]]; then
+            echo "type=rc" >> $GITHUB_OUTPUT
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "type=release" >> $GITHUB_OUTPUT
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+  # 🏗️ Phase 2: Build Release Artifacts
+  build-release:
+    name: Build Release Artifacts
+    needs: prepare-release
+    uses: ./.github/workflows/build-executable.yml
+
+  # 📦 Phase 3: Create and Publish Release
+  publish-release:
+    name: Publish Release
+    needs: [prepare-release, build-release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.ref }}
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: CookieClickerBot-${{ github.sha }}
+          path: dist/
+
+      - name: Prepare release assets
+        run: |
+          # Create checksum file
+          echo "${{ needs.build-release.outputs.checksum }}" > dist/CookieClickerBot.exe.sha256
+
+          # Generate changelog
+          git-cliff --config cliff.toml -o CHANGELOG.md
+
+      - name: Update CHANGELOG.md in repository
+        run: |
+          # Check if CHANGELOG.md was modified
+          if git diff --quiet CHANGELOG.md; then
+            echo "CHANGELOG.md is already up to date"
+          else
+            echo "CHANGELOG.md has been updated"
+            git config user.name 'github-actions[bot]'
+            git config user.email 'github-actions[bot]@users.noreply.github.com'
+            git add CHANGELOG.md
+            git commit -m "docs: update CHANGELOG.md for ${{ needs.prepare-release.outputs.new-tag }}"
+            git push
+          fi
+
+      - name: Generate release notes
+        run: |
+          release_type="${{ needs.prepare-release.outputs.release-type }}"
+          checksum="${{ needs.build-release.outputs.checksum }}"
+          size_mb="${{ needs.build-release.outputs.size-mb }}"
+
+          # Create emoji based on release type
+          case $release_type in
+            "release") badge="🚀"; name="Release" ;;
+            "beta") badge="🧪"; name="Beta Release" ;;
+            "alpha") badge="⚗️"; name="Alpha Release" ;;
+            "rc") badge="🎯"; name="Release Candidate" ;;
+            *) badge="📦"; name="Release" ;;
+          esac
+
+          # Generate comprehensive release notes
+          printf "## %s %s %s\n\n" "$badge" "$name" "${{ needs.prepare-release.outputs.new-tag }}"
+          printf "**Version:** \`%s\`\n" "${{ needs.prepare-release.outputs.new-version }}"
+          printf "**Release Type:** \`%s\`\n\n" "$release_type"
+          printf "### 📥 Installation\n"
+          printf "1. Download \`CookieClickerBot.exe\`\n"
+          printf "2. Run the executable\n"
+          printf "3. No installation required!\n\n"
+          printf "### ✅ Verification\n"
+          printf "**SHA256:** \`%s\`\n" "$checksum"
+          printf "**Size:** %s MB\n\n" "$size_mb"
+          printf "**PowerShell:**\n"
+          printf "\`\`\`powershell\n"
+          printf "(Get-FileHash CookieClickerBot.exe -Algorithm SHA256).Hash -eq \"%s\"\n" "$checksum"
+          printf "\`\`\`\n\n"
+          printf "**Command Prompt:**\n"
+          printf "\`\`\`cmd\n"
+          printf "certutil -hashfile CookieClickerBot.exe SHA256\n"
+          printf "\`\`\`\n\n"
+          printf "### 📝 What's Changed\n" > release_notes.md
+
+          # Add changelog content
+          if [ -f "CHANGELOG_RELEASE.md" ]; then
+            cat CHANGELOG_RELEASE.md >> release_notes.md
+          fi
+
+          # Add footer
+          printf "\n---\n\n" >> release_notes.md
+          printf "**Full Changelog:** %s/%s/releases/tag/%s\n" "${{ github.server_url }}" "${{ github.repository }}" "${{ needs.prepare-release.outputs.new-tag }}" >> release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.prepare-release.outputs.new-tag }}
+          name: ${{ needs.prepare-release.outputs.new-tag }}
+          prerelease: ${{ needs.prepare-release.outputs.is-prerelease }}
+          body_path: release_notes.md
+          files: |
+            dist/CookieClickerBot.exe
+            dist/CookieClickerBot.exe.sha256
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 🏷️ Phase 4: Post-Release Tasks
+  post-release:
+    name: Post Release Tasks
+    needs: [prepare-release, publish-release]
+    if: needs.prepare-release.outputs.release-type == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update latest release tag
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+          # Update or create 'latest' tag
+          git tag -f latest
+          git push -f origin latest
+
+      - name: Notify team (optional)
+        run: |
+          echo "🎉 Release ${{ needs.prepare-release.outputs.new-tag }} published successfully!"
+          # Add webhook notifications, Slack messages, etc. here
