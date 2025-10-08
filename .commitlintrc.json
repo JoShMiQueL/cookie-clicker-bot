@@ -6,7 +6,6 @@
 			"always",
 			["feat", "fix", "docs", "style", "refactor", "perf", "test", "chore"]
 		],
-		"subject-case": [2, "always", "sentence-case"],
 		"header-max-length": [2, "always", 100]
 	}
 }
