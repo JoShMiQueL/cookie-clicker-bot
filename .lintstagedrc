@@ -1,0 +1,6 @@
+{
+  "*.{js,jsx,ts,tsx,json,css,md}": [
+    "bun run lint:fix --no-errors-on-unmatched",
+    "bun run lint --no-errors-on-unmatched"
+  ]
+}

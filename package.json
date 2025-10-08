@@ -1,0 +1,46 @@
+{
+	"name": "cookie-auto-clicker",
+	"private": true,
+	"version": "0.1.0",
+	"type": "module",
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc && vite build",
+		"preview": "vite preview",
+		"tauri": "tauri",
+		"lint": "biome check",
+		"lint:fix": "biome check --write",
+		"lint-staged": "lint-staged",
+		"test": "bun test",
+		"prepare": "husky"
+	},
+	"dependencies": {
+		"@tauri-apps/api": "2.0.0",
+		"@tauri-apps/plugin-opener": "2.0.0",
+		"react": "19.1.0",
+		"react-dom": "19.1.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.2.5",
+		"@commitlint/cli": "20.1.0",
+		"@commitlint/config-conventional": "20.0.0",
+		"@tailwindcss/vite": "4.1.14",
+		"@tauri-apps/cli": "2.0.0",
+		"@types/bun": "1.2.23",
+		"@types/react": "19.1.8",
+		"@types/react-dom": "19.1.6",
+		"@vitejs/plugin-react": "5.0.4",
+		"husky": "9.1.7",
+		"lint-staged": "16.2.3",
+		"tailwindcss": "4.1.14",
+		"vite": "7.0.4"
+	},
+	"peerDependencies": {
+		"typescript": "5.9.3"
+	},
+	"trustedDependencies": [
+		"@parcel/watcher",
+		"@tailwindcss/oxide",
+		"esbuild"
+	]
+}
