@@ -1,0 +1,52 @@
+# Label PRs based on changed files
+
+area/gui:
+  - changed-files:
+    - any-glob-to-any-file:
+      - src/gui.py
+      - src/overlay.py
+
+area/core:
+  - changed-files:
+    - any-glob-to-any-file:
+      - src/clicker.py
+      - src/window_finder.py
+      - src/config.py
+
+area/build:
+  - changed-files:
+    - any-glob-to-any-file:
+      - CookieClickerBot.spec
+      - pyproject.toml
+
+area/ci:
+  - changed-files:
+    - any-glob-to-any-file:
+      - .github/**/*
+      - .pre-commit-config.yaml
+
+area/docs:
+  - changed-files:
+    - any-glob-to-any-file:
+      - README.md
+      - CONTRIBUTING.md
+      - docs/**/*
+      - '**/*.md'
+
+area/tests:
+  - changed-files:
+    - any-glob-to-any-file:
+      - tests/**/*
+      - '**/test_*.py'
+
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file:
+      - pyproject.toml
+
+config:
+  - changed-files:
+    - any-glob-to-any-file:
+      - ruff.toml
+      - .pre-commit-config.yaml
+      - pyproject.toml
