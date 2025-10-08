@@ -155,18 +155,8 @@ jobs:
 
             const commitCount = commits.length;
 
-            // Get changed file types
-            const fileTypes = {};
-            files.forEach(file => {
-              const ext = file.filename.split('.').pop();
-              fileTypes[ext] = (fileTypes[ext] || 0) + 1;
-            });
-
-            const fileTypesList = Object.entries(fileTypes)
-              .sort((a, b) => b[1] - a[1])
-              .slice(0, 5)
-              .map(([ext, count]) => `\` ${ext}\` **${count}**`)
-              .join(' • ');
+            // Format numbers with thousand separators
+            const formatNumber = num => num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
             // Calculate PR size (matching size/* labels)
             const prSize = additions + deletions;
@@ -207,22 +197,19 @@ jobs:
               '',
               '| Metric | Value |',
               '|--------|-------|',
-              `| 🟢 **Lines Added** | \` +${additions}\` |` ,
-              `| 🔴 **Lines Deleted** | \` -${deletions}\` |` ,
-              `| 📊 **Net Change** | \` ${additions - deletions > 0 ? '+' : ''}${additions - deletions}\` |` ,
-              `| 📁 **Files Changed** | \` ${filesChanged}\` |` ,
-              `| ✨ **Files Added** | \` ${filesAdded}\` |` ,
-              `| ✏️ **Files Modified** | \` ${filesModified}\` |` ,
-              `| 🗑️ **Files Deleted** | \` ${filesDeleted}\` |` ,
-              `| 📝 **Commits** | \` ${commitCount}\` |` ,
+              `| 🟢 **Lines Added** | \`+${formatNumber(additions)}\` |` ,
+              `| 🔴 **Lines Deleted** | \`-${formatNumber(deletions)}\` |` ,
+              `| 📊 **Net Change** | \`${additions - deletions > 0 ? '+' : ''}${formatNumber(additions - deletions)}\` |` ,
+              `| 📁 **Files Changed** | \`${formatNumber(filesChanged)}\` |` ,
+              `| ✨ **Files Added** | \`${formatNumber(filesAdded)}\` |` ,
+              `| ✏️ **Files Modified** | \`${formatNumber(filesModified)}\` |` ,
+              `| 🔄 **Files Renamed** | \`${formatNumber(filesRenamed)}\` |` ,
+              `| 🗑️ **Files Deleted** | \`${formatNumber(filesDeleted)}\` |` ,
+              `| 📝 **Commits** | \`${formatNumber(commitCount)}\` |` ,
               '',
               '### 📦 PR Size',
               '',
-              `${sizeEmoji} **${sizeLabel}** — \` ${prSize}\` total changes` ,
-              '',
-              '### 📄 Top File Types',
-              '',
-              fileTypesList || '*No files changed*',
+              `${sizeEmoji} **${sizeLabel}** — \`${formatNumber(prSize)}\` total changes` ,
               '',
               '---',
               '',
