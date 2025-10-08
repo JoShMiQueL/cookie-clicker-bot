@@ -104,41 +104,60 @@ jobs:
           script: |
             const pr = context.payload.pull_request;
 
-            // Get PR diff stats
-            const files = await github.rest.pulls.listFiles({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: pr.number
-            });
+            // Get all files in the PR with pagination
+            let files = [];
+            let page = 1;
+            let response;
+            
+            do {
+              response = await github.rest.pulls.listFiles({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                per_page: 100,
+                page: page++
+              });
+              files = files.concat(response.data);
+            } while (response.data.length === 100);
 
             let additions = 0;
             let deletions = 0;
-            let filesChanged = files.data.length;
+            let filesChanged = files.length;
             let filesAdded = 0;
             let filesDeleted = 0;
             let filesModified = 0;
+            let filesRenamed = 0;
 
-            files.data.forEach(file => {
-              additions += file.additions;
-              deletions += file.deletions;
+            files.forEach(file => {
+              additions += file.additions || 0;
+              deletions += file.deletions || 0;
 
               if (file.status === 'added') filesAdded++;
               else if (file.status === 'removed') filesDeleted++;
               else if (file.status === 'modified') filesModified++;
+              else if (file.status === 'renamed') filesRenamed++;
             });
 
-            // Get commit count
-            const commits = await github.rest.pulls.listCommits({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: pr.number
-            });
+            // Get all commits in the PR with pagination
+            let commits = [];
+            page = 1;
+            
+            do {
+              response = await github.rest.pulls.listCommits({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                per_page: 100,
+                page: page++
+              });
+              commits = commits.concat(response.data);
+            } while (response.data.length === 100);
 
-            const commitCount = commits.data.length;
+            const commitCount = commits.length;
 
             // Get changed file types
             const fileTypes = {};
-            files.data.forEach(file => {
+            files.forEach(file => {
               const ext = file.filename.split('.').pop();
               fileTypes[ext] = (fileTypes[ext] || 0) + 1;
             });
