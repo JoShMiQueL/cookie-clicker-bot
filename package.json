@@ -10,6 +10,7 @@
 		"tauri": "tauri",
 		"lint": "biome check",
 		"lint:fix": "biome check --write",
+		"lint-staged": "lint-staged",
 		"test": "bun test",
 		"prepare": "husky"
 	},
@@ -41,11 +42,5 @@
 		"@parcel/watcher",
 		"@tailwindcss/oxide",
 		"esbuild"
-	],
-	"lint-staged": {
-		"*.{js,jsx,ts,tsx,json,css,md}": [
-			"bun run lint:fix --no-errors-on-unmatched",
-			"bun run lint --no-errors-on-unmatched"
-		]
-	}
+	]
 }
