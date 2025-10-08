@@ -1,0 +1,95 @@
+name: PR Triage (Size, Type, & Stats)
+
+on:
+  pull_request_target:
+    types: [opened, reopened]
+  pull_request:
+    types: [synchronize]
+
+jobs:
+  # First job: Calculate statistics and set labels
+  triage-labels:
+    name: Triage and Label PR
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: read
+      pull-requests: write
+
+    outputs:
+      sizeLabel: ${{ steps.size_labeler.outputs.sizeLabel }}
+      additions: ${{ steps.size_labeler.outputs.additions }}
+      deletions: ${{ steps.size_labeler.outputs.deletions }}
+      changedFiles: ${{ steps.size_labeler.outputs.changedFiles }}
+      typeLabels: ${{ steps.type_labeler.outputs.labels }}
+      totalChanges: ${{ steps.calculate_stats.outputs.totalChanges }}
+
+    steps:
+      # Step 1: Label PR Type (feat, fix, breaking)
+      - name: Label PR Type (feat, fix, breaking)
+        uses: fuxingloh/multi-labeler@v4
+        id: type_labeler
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          config-path: .github/pr-type-labeler.yml
+
+      # Step 2: Label PR Size and Output Statistics
+      - name: Label PR Size and Output Statistics
+        uses: "pascalgn/size-label-action@v0.5.5"
+        id: size_labeler
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          sizes: |
+            {
+              "0": "size/XS",
+              "10": "size/S",
+              "30": "size/M",
+              "100": "size/L",
+              "500": "size/XL",
+              "1000": "size/XXL"
+            }
+      
+      # Calculate total changes
+      - name: Calculate Total Changes
+        id: calculate_stats
+        run: |
+          additions=${{ steps.size_labeler.outputs.additions }}
+          deletions=${{ steps.size_labeler.outputs.deletions }}
+          totalChanges=$((additions + deletions))
+          echo "totalChanges=$totalChanges" >> $GITHUB_OUTPUT
+
+  # Second job: Create or update comment
+  update-comment:
+    name: Update PR Comment
+    needs: triage-labels
+    runs-on: ubuntu-latest
+    
+    permissions:
+      pull-requests: write
+      
+    steps:
+      - name: Create or Update Statistics Comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: pr-stats-comment-${{ github.event.pull_request.number }}
+          body: |
+            ## 📊 PR Statistics - Updated 🔄
+            
+            Hello there 👋! Your Pull Request stats have been updated with the latest commit.
+
+            - **Assigned Size:** **\`${{ needs.triage-labels.outputs.sizeLabel }}\`**
+            - **Change Type:** **\`${{ needs.triage-labels.outputs.typeLabels }}\`**
+            
+            ---
+            
+            ### Summary of Changes:
+            * **➕ Lines Added:** **+${{ needs.triage-labels.outputs.additions }}**
+            * **➖ Lines Deleted:** **-${{ needs.triage-labels.outputs.deletions }}**
+            * **🔢 Total Changes:** **${{ needs.triage-labels.outputs.totalChanges }}** lines
+            * **📁 Files Modified:** ${{ needs.triage-labels.outputs.changedFiles }}
+            
+            ${{ needs.triage-labels.outputs.sizeLabel == 'size/XXL' && '⚠️ **Warning!** This PR is extremely large. Please consider splitting it up to simplify the review process.' || ''}}
+          
+          edit-mode: replace
